@@ -7,6 +7,8 @@ from keras.regularizers import l2
 import keras.backend as K
 import itertools
 from keras.preprocessing.image import ImageDataGenerator
+from keras.applications.vgg16 import VGG16
+from keras.preprocessing import image
 
 def preprocess_imagenet_input(x, data_format=None):
     """Preprocesses a tensor encoding a batch of images.
