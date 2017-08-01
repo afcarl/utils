@@ -4,8 +4,92 @@ from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from keras.layers import Activation, BatchNormalization, Dropout, Conv2D, Dense, MaxPool2D, Input, Flatten
 from keras.regularizers import l2
+import keras.backend as K
 import itertools
 from keras.preprocessing.image import ImageDataGenerator
+
+def preprocess_imagenet_input(x, data_format=None):
+    """Preprocesses a tensor encoding a batch of images.
+    # Arguments
+        x: input Numpy tensor, 4D.
+        data_format: data format of the image tensor.
+    # Returns
+        Preprocessed tensor.
+    """
+    if data_format is None:
+        data_format = K.image_data_format()
+    assert data_format in {'channels_last', 'channels_first'}
+    if x.shape==4:
+        if data_format == 'channels_first':
+            # 'RGB'->'BGR'
+            x = x[:, ::-1, :, :]
+            # Zero-center by mean pixel
+            x[:, 0, :, :] -= 103.939
+            x[:, 1, :, :] -= 116.779
+            x[:, 2, :, :] -= 123.68
+        else:
+            # 'RGB'->'BGR'
+            x = x[:, :, :, ::-1]
+            # Zero-center by mean pixel
+            x[:, :, :, 0] -= 103.939
+            x[:, :, :, 1] -= 116.779
+            x[:, :, :, 2] -= 123.68
+    else:
+        if data_format == 'channels_first':
+            # 'RGB'->'BGR'
+            x = x[::-1, :, :]
+            # Zero-center by mean pixel
+            x[0, :, :] -= 103.939
+            x[1, :, :] -= 116.779
+            x[2, :, :] -= 123.68
+        else:
+            # 'RGB'->'BGR'
+            x = x[:, :, ::-1]
+            # Zero-center by mean pixel
+            x[:, :, 0] -= 103.939
+            x[:, :, 1] -= 116.779
+            x[:, :, 2] -= 123.68
+    return x
+
+def undo_preprocess_imagenet_input(x, data_format=None):
+
+    if data_format is None:
+        data_format = K.image_data_format()
+    assert data_format in {'channels_last', 'channels_first'}
+    if x.shape==4:
+        if data_format == 'channels_first':
+            # 'RGB'->'BGR'
+            # Zero-center by mean pixel
+            x[:, 0, :, :] += 103.939
+            x[:, 1, :, :] += 116.779
+            x[:, 2, :, :] += 123.68
+            x = x[:, ::-1, :, :]
+        else:
+            # 'RGB'->'BGR'
+            # Zero-center by mean pixel
+            x[:, :, :, 0] += 103.939
+            x[:, :, :, 1] += 116.779
+            x[:, :, :, 2] += 123.68
+            x = x[:, :, :, ::-1]
+
+    else:
+        if data_format == 'channels_first':
+            # 'RGB'->'BGR'
+            # Zero-center by mean pixel
+            x[0, :, :] += 103.939
+            x[1, :, :] += 116.779
+            x[2, :, :] += 123.68
+            x = x[::-1, :, :]
+
+        else:
+            # 'RGB'->'BGR'
+            # Zero-center by mean pixel
+            x[:, :, 0] += 103.939
+            x[:, :, 1] += 116.779
+            x[:, :, 2] += 123.68
+            x = x[:, :, ::-1]
+
+    return x
 
 def directory_train_test_split(path, prop=0.2, sample=False):    
     subdirs = os.listdir(PATH)
